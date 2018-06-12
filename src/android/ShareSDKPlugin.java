@@ -295,8 +295,12 @@ public class ShareSDKPlugin extends CordovaPlugin {
                 break;
         }
 
-        // sp.setImagePath(shareInfo.optString("image"));
-        sp.setImageUrl(shareInfo.optString("image"));
+        String [] imagePath = shareInfo.optString("image").split(":");
+        if(imagePath[0].substring(0,4).equals("http")){
+            sp.setImageUrl(shareInfo.optString("image"));
+        }else{
+            sp.setImagePath(shareInfo.optString("image"));
+        }
         platform.setPlatformActionListener(platformActionStateListener);
         platform.share(sp);
     }
