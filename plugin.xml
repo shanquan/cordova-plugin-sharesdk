@@ -39,6 +39,19 @@
         <source-file src="src/android/ShareSDK/src/cn/sharesdk/onekeyshare" target-dir="src/cn/sharesdk" />
         <source-file src="src/android/ShareSDK/res/values/ssdk_oks_strings.xml" target-dir="res/values" />
         <source-file src="src/android/ShareSDK/res/values/ssdk_strings.xml" target-dir="res/values" />
+        <source-file src="src/android/ShareSDK/res/values/ssdk_oks_color_drawables.xml" target-dir="res/values" />
+        <source-file src="src/android/ShareSDK/res/values/ssdk_instapaper_strings.xml" target-dir="res/values" />
+        <source-file src="src/android/ShareSDK/res/drawable/ssdk_oks_classic_platform_cell_back.xml" target-dir="res/drawable" />
+        <source-file src="src/android/ShareSDK/res/drawable/ssdk_oks_classic_progressbar.xml" target-dir="res/drawable" />
+        <source-file src="src/android/ShareSDK/res/drawable-hdpi/ssdk_oks_ptr_ptr.png" target-dir="res/drawable-hdpi" />
+        <source-file src="src/android/ShareSDK/res/drawable-xhdpi/ssdk_oks_classic_check_checked.png" target-dir="res/drawable-xhdpi" />
+        <source-file src="src/android/ShareSDK/res/drawable-xhdpi/ssdk_oks_classic_check_default.png" target-dir="res/drawable-xhdpi" />
+        <source-file src="src/android/ShareSDK/res/drawable-xhdpi/ssdk_oks_classic_qq.png" target-dir="res/drawable-xhdpi" />
+        <source-file src="src/android/ShareSDK/res/drawable-xhdpi/ssdk_oks_classic_qzone.png" target-dir="res/drawable-xhdpi" />
+        <source-file src="src/android/ShareSDK/res/drawable-xhdpi/ssdk_oks_classic_sinaweibo.png" target-dir="res/drawable-xhdpi" />
+        <source-file src="src/android/ShareSDK/res/drawable-xhdpi/ssdk_oks_classic_wechat.png" target-dir="res/drawable-xhdpi" />
+        <source-file src="src/android/ShareSDK/res/drawable-xhdpi/ssdk_oks_classic_wechatfavorite.png" target-dir="res/drawable-xhdpi" />
+        <source-file src="src/android/ShareSDK/res/drawable-xhdpi/ssdk_oks_classic_wechatmoments.png" target-dir="res/drawable-xhdpi" />
         <!-- ShareSDK Libs -->
         <lib-file src="src/android/ShareSDK/libs/MobCommons-2016.1222.1756.jar" />
         <lib-file src="src/android/ShareSDK/libs/MobTools-2016.1222.1756.jar" />
@@ -51,6 +64,7 @@
         <lib-file src="src/android/ShareSDK/libs/ShareSDK-SinaWeibo-2.8.0.jar" />
         <!--QQ jar-->
         <lib-file src="src/android/ShareSDK/libs/ShareSDK-QQ-2.8.0.jar" />
+        <lib-file src="src/android/ShareSDK/libs/ShareSDK-QZone-2.8.0.jar" />
         <!--添加权限-->
         <config-file target="AndroidManifest.xml" parent="/*">
             <uses-permission android:name="android.permission.GET_TASKS" />
@@ -88,6 +102,7 @@
 
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
             <activity android:name="com.mob.tools.MobUIShell" android:theme="@android:style/Theme.Translucent.NoTitleBar" android:configChanges="keyboardHidden|orientation|screenSize" android:screenOrientation="portrait" android:windowSoftInputMode="stateHidden|adjustResize">
+                <meta-data android:name="AuthorizeAdapter" android:value="cn.sharesdk.demo.MyAdapter" />
                 <!-- 调用新浪原生SDK，需要注册的回调activity -->
                 <intent-filter>
                     <action android:name="com.sina.weibo.sdk.action.ACTION_SDK_REQ_ACTIVITY" />
@@ -128,16 +143,26 @@
                 <string>sinaweibohdsso</string>
                 <string>weibosdk</string>
                 <string>weibosdk2.5</string>
-                <!--qq friend-->
+                <!--qq friend && qq Zone-->
+                <string>mqzoneopensdk</string>
+                <string>mqzoneopensdkapi</string>
+                <string>mqzoneopensdkapi19</string>
+                <string>mqzoneopensdkapiV2</string>
                 <string>mqqOpensdkSSoLogin</string>
                 <string>mqqopensdkapiV2</string>
                 <string>mqqopensdkapiV3</string>
                 <string>wtloginmqq2</string>
-                <string>mqq</string>
                 <string>mqqapi</string>
+                <string>mqqwpa</string>
+                <string>mqzone</string>
+                <string>mqq</string>
+                <string>mqqopensdkapiV4</string>
+
             </array>
         </config-file>
-        <!--配置URL Scheme reference http://bbs.mob.com/thread-567-1-1.html-->
+        <!--配置URL Scheme reference http://bbs.mob.com/thread-567-1-1.html  
+        QQ SSO登录需要 tencent$IOSAPPID
+        -->
         <config-file target="*-Info.plist" parent="CFBundleURLTypes">
             <array>
                 <dict>
@@ -148,6 +173,7 @@
                         <string>$WECHAT_APP_ID</string>
                         <string>wb$WEIBO_APP_ID</string>
                         <string>QQ$QQ_IOS_APP_HEX_ID</string>
+                        <string>tencent$QQ_IOS_APP_ID</string>
                     </array>
                 </dict>
             </array>
@@ -187,6 +213,10 @@
         <header-file src="src/ios/ShareSDK/Support/PlatformSDK/SinaWeiboSDK/WeiboSDK.h" />
         <header-file src="src/ios/ShareSDK/Support/PlatformSDK/SinaWeiboSDK/WeiboSDK+Statistics.h" />
         <header-file src="src/ios/ShareSDK/Support/PlatformSDK/SinaWeiboSDK/WeiboUser.h" />
+        <!-- Optional oauth $ onekeyshare -->
+        <resource-file src="src/ios/ShareSDK/Support/Optional/ShareSDKUI.bundle"/>
+        <framework src="src/ios/ShareSDK/Support/Optional/ShareSDKUI.framework" custom="true" />
+        <framework src="src/ios/ShareSDK/Support/Optional/ShareSDKExtension.framework" custom="true" />
         <!-- QQ Official -->
         <resource-file src="src/ios/ShareSDK/Support/PlatformSDK/QQSDK/TencentOpenApi_IOS_Bundle.bundle" />
         <framework src="src/ios/ShareSDK/Support/PlatformConnector/QQConnector.framework" custom="true" />

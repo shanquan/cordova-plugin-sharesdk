@@ -3,6 +3,8 @@ package behring.cordovasharesdk;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.view.View;
+import android.util.Log;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
@@ -13,12 +15,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.HashMap;
 import cn.sharesdk.framework.Platform;
+import cn.sharesdk.framework.PlatformDb;
 import cn.sharesdk.framework.PlatformActionListener;
 import cn.sharesdk.framework.ShareSDK;
 import cn.sharesdk.sina.weibo.SinaWeibo;
 import cn.sharesdk.tencent.qq.QQ;
+import cn.sharesdk.tencent.qzone.QZone;
 import cn.sharesdk.wechat.friends.Wechat;
 import cn.sharesdk.wechat.moments.WechatMoments;
+import cn.sharesdk.onekeyshare.OnekeyShare;
 
 
 /**
@@ -28,6 +33,7 @@ public class ShareSDKPlugin extends CordovaPlugin {
     private static final int SINA_WEIBO_CLIENT = 1;
     private static final int WECHAT_CLIENT = 2;
     private static final int QQ_CLIENT = 3;
+    private static final int Q_ZONE_CLIENT = 6;
 
     /**平台和分享类型的值参考ShareSDK ios源码中的值*/
     /** 新浪微博 */
@@ -53,14 +59,18 @@ public class ShareSDKPlugin extends CordovaPlugin {
     private static final int RESPONSE_STATE_FAIL = 2;
     private static final int RESPONSE_STATE_CANCEL = 3;
 
-
-
     private CallbackContext callbackContext;
     private PlatformActionListener platformActionStateListener = new PlatformActionListener() {
         @Override
         public void onComplete(Platform platform, int i, HashMap<String, Object> hashMap) {
-            if(callbackContext!=null)
-                callbackContext.success();
+            if (i == Platform.ACTION_USER_INFOR) {
+                Log.v("sq",platform.getDb().exportData());
+                if(callbackContext!=null)
+                    callbackContext.success(platform.getDb().exportData());
+            }else{
+                if(callbackContext!=null)
+                    callbackContext.success();
+            }
         }
 
         @Override
@@ -84,6 +94,7 @@ public class ShareSDKPlugin extends CordovaPlugin {
                 JSONObject jsonObject = new JSONObject();
                 try {
                     jsonObject.putOpt("state", RESPONSE_STATE_CANCEL);
+                    jsonObject.putOpt("error","cancel");
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }finally {
@@ -98,7 +109,6 @@ public class ShareSDKPlugin extends CordovaPlugin {
         super.initialize(cordova, webView);
         ShareSDK.initSDK(cordova.getActivity());
     }
-
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
@@ -111,6 +121,50 @@ public class ShareSDKPlugin extends CordovaPlugin {
         } else if(action.equals("isInstallClient")) {
             int clientType = args.optInt(0);
             isInstallClient(clientType, callbackContext);
+            return true;
+        } else if(action.equals("onekeyShare")){
+            OnekeyShare oks = new OnekeyShare();
+            oks.setSilent(false);
+            // oks.disableSSOWhenAuthorize();
+            View view = webView.getView();
+            oks.setViewToShare(view);
+            oks.setCallback(platformActionStateListener);
+            oks.show(cordova.getActivity());
+            return true;
+        } else if(action.equals("getAuthorize")||action.equals("getUserInfo")){
+            int clientType = args.optInt(0);
+            Platform platform = null;
+            switch (clientType) {
+                case SINA_WEIBO_CLIENT:
+                    platform = ShareSDK.getPlatform(SinaWeibo.NAME);
+                    break;
+                case WECHAT_CLIENT:
+                    platform = ShareSDK.getPlatform(Wechat.NAME);
+                    break;
+                case QQ_CLIENT:
+                    platform = ShareSDK.getPlatform(QQ.NAME);
+                    break;
+                default:
+                    break;
+            }
+            if(platform!=null){
+                platform.setPlatformActionListener(platformActionStateListener);
+                if(action.equals("getAuthorize")){
+                    platform.authorize();
+                }else if(action.equals("getUserInfo")){
+                    platform.showUser(null);
+                }
+            }else if(callbackContext!=null){
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.putOpt("error", "wrong platform！");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }finally {
+                    callbackContext.error(jsonObject);
+                }
+            }
+            return true;
         }
         return false;
     }
@@ -150,6 +204,9 @@ public class ShareSDKPlugin extends CordovaPlugin {
             case QQ_CLIENT:
                 platform = ShareSDK.getPlatform(QQ.NAME);
                 break;
+            case Q_ZONE_CLIENT:
+                platform = ShareSDK.getPlatform(QZone.NAME);
+            break;
             default:
                 break;
         }
@@ -195,6 +252,10 @@ public class ShareSDKPlugin extends CordovaPlugin {
                 sp = new QQ.ShareParams();
                 platform = ShareSDK.getPlatform(QQ.NAME);
                 break;
+            case SSDKPlatformTypeQZone:
+                sp = new QQ.ShareParams();
+                platform = ShareSDK.getPlatform(QZone.NAME);
+                break;
             default:
                 break;
         }
@@ -226,10 +287,15 @@ public class ShareSDKPlugin extends CordovaPlugin {
                 sp = new QQ.ShareParams();
                 platform = ShareSDK.getPlatform(QQ.NAME);
                 break;
+            case SSDKPlatformTypeQZone:
+                sp = new QQ.ShareParams();
+                platform = ShareSDK.getPlatform(QZone.NAME);
+                break;
             default:
                 break;
         }
 
+        // sp.setImagePath(shareInfo.optString("image"));
         sp.setImageUrl(shareInfo.optString("image"));
         platform.setPlatformActionListener(platformActionStateListener);
         platform.share(sp);
@@ -257,11 +323,15 @@ public class ShareSDKPlugin extends CordovaPlugin {
                 sp = new QQ.ShareParams();
                 platform = ShareSDK.getPlatform(QQ.NAME);
                 break;
+            case SSDKPlatformTypeQZone:
+                sp = new QQ.ShareParams();
+                platform = ShareSDK.getPlatform(QZone.NAME);
+                break;
             default:
                 break;
         }
 
-        sp.setImageUrl(shareInfo.optString("icon"));
+        sp.setImageUrl(shareInfo.optString("image"));
         sp.setTitle(shareInfo.optString("title"));
         sp.setUrl(shareInfo.optString("url"));
         sp.setText(shareInfo.optString("text"));

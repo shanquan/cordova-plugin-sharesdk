@@ -1,7 +1,7 @@
 {
   "name": "cordova-plugin-sharesdk",
   "version": "0.1.0",
-  "description": "封装sharesdk,使hybird app能快速集成分享功能",
+  "description": "封装sharesdk,使hybird app能快速集成分享和登录功能",
   "cordova": {
     "id": "cordova-plugin-sharesdk",
     "platforms": [
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zhaolin0801/cordova-plugin-sharesdk.git"
+    "url": "git+https://github.com/shanquan/cordova-plugin-sharesdk.git"
   },
   "keywords": [
     "cordova",
@@ -25,9 +25,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/zhaolin0801/cordova-plugin-sharesdk/issues"
+    "url": "https://github.com/shanquan/cordova-plugin-sharesdk/issues"
   },
-  "homepage": "https://github.com/zhaolin0801/cordova-plugin-sharesdk#readme",
+  "homepage": "https://github.com/shanquan/cordova-plugin-sharesdk#readme",
   "engines": [
     {
       "name": "cordova-android",
@@ -38,5 +38,5 @@
       "version": ">=4.0.0"
     }
   ],
-  "author": "behring.zhao"
+  "author": "shanquan"
 }

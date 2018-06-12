@@ -3,6 +3,8 @@
 //ShareSDK头文件
 #import <ShareSDK/ShareSDK.h>
 #import <ShareSDKConnector/ShareSDKConnector.h>
+//登录授权头文件
+#import <ShareSDKExtension/SSEThirdPartyLoginHelper.h>
 //微信SDK头文件
 #import "WXApi.h"
 //新浪微博SDK头文件
@@ -150,6 +152,84 @@ int const QQ_CLIENT = 3;
     }
 }
 
+- (void)getAuthorize:(CDVInvokedUrlCommand*)command
+{
+    _command = command;
+    SSDKPlatformType platformType;
+    NSNumber* clientType = [command.arguments objectAtIndex:0];
+    switch ([clientType integerValue]) {
+        case SINA_WEIBO_CLIENT:
+            platformType = SSDKPlatformTypeSinaWeibo;
+            break;
+        case WECHAT_CLIENT:
+            platformType = SSDKPlatformTypeWechat;
+            break;
+        case QQ_CLIENT:
+            platformType = SSDKPlatformTypeQQ;
+            break;
+    }
+    NSLog(@"平台是否已授权：%i",[ShareSDK hasAuthorized:platformType]);
+//    BOOL isAuthorized =[ShareSDK hasAuthorized:platformType];
+//    if(isAuthorized){
+//        NSLog(@"取消授权！");
+//        [ShareSDK cancelAuthorize:platformType];
+//    }
+    [SSEThirdPartyLoginHelper loginByPlatform:platformType
+                                   onUserSync:^(SSDKUser *user, SSEUserAssociateHandler associateHandler) {
+                                       
+                                       //在此回调中可以将社交平台用户信息与自身用户系统进行绑定，最后使用一个唯一用户标识来关联此用户信息。
+                                       //在此示例中没有跟用户系统关联，则使用一个社交用户对应一个系统用户的方式。将社交用户的uid作为关联ID传入associateHandler。
+                                       //associateHandler (user.uid, user, user);
+                                       NSLog(@"dd%@",user.rawData);
+                                       NSLog(@"dd%@",user.credential);
+                                       CDVPluginResult* pluginResult = nil;
+                                       pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:@{@"uid":[NSString stringWithString:user.uid]}];
+                                       [self.commandDelegate sendPluginResult:pluginResult callbackId:_command.callbackId];
+                                   }
+                                onLoginResult:^(SSDKResponseState state, SSEBaseUser *user, NSError *error) {
+                                    
+                                    NSLog(@"onLoginResult:%@",[NSNumber numberWithInt:state]);
+                                    NSLog(@"dd%@",user);
+                                    //[self returnUserToTrigger:state user:user error:error];
+                                    [self returnStateToTrigger:state error:error];
+                                    
+                                }];
+    
+}
+
+- (void)getUserInfo:(CDVInvokedUrlCommand*)command
+{
+    _command = command;
+    SSDKPlatformType platformType;
+    NSNumber* clientType = [command.arguments objectAtIndex:0];
+    switch ([clientType integerValue]) {
+        case SINA_WEIBO_CLIENT:
+            platformType = SSDKPlatformTypeSinaWeibo;
+            break;
+        case WECHAT_CLIENT:
+            platformType = SSDKPlatformTypeWechat;
+            break;
+        case QQ_CLIENT:
+            platformType = SSDKPlatformTypeQQ;
+            break;
+    }
+    NSLog(@"平台是否已授权：%i",[ShareSDK hasAuthorized:platformType]);
+    [ShareSDK getUserInfo:platformType
+           onStateChanged:^(SSDKResponseState state, SSDKUser *user, NSError *error)
+     {
+         
+         NSLog(@"onStateChanged: %@",[NSNumber numberWithInt:state]);
+         NSLog(@"dd%@",user.rawData);
+         //[self returnUserToTrigger:state user:user error:error];
+         
+     }];
+}
+
+- (void)onekeyShare :(CDVInvokedUrlCommand*)command
+{
+    
+}
+
 - (void)copyLink:(NSDictionary *)shareInfo
 {
     CDVPluginResult* pluginResult = nil;
@@ -229,4 +309,19 @@ int const QQ_CLIENT = 3;
     }
     [self.commandDelegate sendPluginResult:pluginResult callbackId:_command.callbackId];
 }
+
+-(void)returnUserToTrigger:(SSDKResponseState)state user:(SSDKUser *)user error:(NSError *)error {
+    CDVPluginResult* pluginResult = nil;
+    if(state == SSDKResponseStateSuccess) {
+        pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:@{@"uid":[NSString stringWithString:user.uid],@"nickname":user.nickname,@"icon":user.icon,@"gender":[NSNumber numberWithInt:user.gender]}];
+    }else {
+        if(error) {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:@{@"state":[NSNumber numberWithInt:state], @"error":[error localizedDescription]}];
+        }else {
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:@{@"state":[NSNumber numberWithInt:state]}];
+        }
+    }
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:_command.callbackId];
+}
+
 @end

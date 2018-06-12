@@ -41,7 +41,9 @@ module.exports = {
         /** 微信客户端 */
         Wechat: 2,
         /** QQ客户端 */
-        QQ: 3
+        QQ: 3,
+        /** QQ空间客户端 */
+        QZone: 6
     },
 
     /** 分享响应状态 */  
